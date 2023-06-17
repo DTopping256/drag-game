@@ -1,0 +1,19 @@
+{
+  "name": "drag-game",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:DTopping256/drag-game.git",
+  "author": "Daniel Topping",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.2"
+  },
+  "scripts": {
+    "start-server": "node server/main.js",
+    "start-client": "open client/index.html",
+    "start": "npm run start-client && npm run start-server",
+    "start-2p": "npm run start-client && npm run start-client && npm run start-server"
+  }
+}
