@@ -4,18 +4,20 @@ const io = new Server({
   cors: { origin: "*" },
 })
 
-function updateMovables() {
-  movablesState = Object.entries(movablesState).reduce((o, [name, movable]) => {
-    return { ...o, [name]: { ...movable, x: vx + x, y: vy + y } }
-  }, movablesState)
-
-  io.emit("movables_state_updated", movablesState)
+const connections = []
+const initialState = {
+  card1: {
+    x: 0,
+    y: 0,
+    content: "Card 1",
+    color: "#8634eb",
+    shape: "circle",
+    zone: "board",
+  },
 }
 
-setInterval(updateMovables, 1000)
-
-const connections = []
-let movablesState = { redBox: { x: 0, y: 0, vx: 0.1, vy: 0.5 } }
+let nextCardNumber = 2
+let movablesState = Object.assign({}, initialState)
 
 function registerSocketListeners(socket) {
   socket.on("update_moveables", ({ movableId, position }) => {
@@ -30,6 +32,30 @@ function registerSocketListeners(socket) {
     console.log(
       `Disconnect: ${socket.id}\nActive connections: [${connections.join(",")}]`
     )
+  })
+
+  socket.on("add", () => {
+    console.log("add", socket.id)
+    movablesState[`card${nextCardNumber}`] = {
+      x: Math.random() * 300,
+      y: Math.random() * 300,
+      content: `Card ${nextCardNumber}`,
+      color: `rgb(${Math.random() * 150}, ${Math.random() * 150}, ${
+        Math.random() * 150
+      })`,
+      shape: "circle",
+      zone: "board",
+    }
+    nextCardNumber++
+    io.emit("movables_state_updated", movablesState)
+  })
+
+  socket.on("reset", () => {
+    console.log("reset", socket.id)
+    movablesState = Object.entries(movablesState)
+      .filter(([, { zone }]) => zone === "hand")
+      .reduce((acc, [cardId, card]) => ({ ...acc, [cardId]: card }), {})
+    io.emit("movables_state_updated", movablesState)
   })
 }
 
